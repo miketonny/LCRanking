@@ -49,7 +49,7 @@ namespace LCRanking
                 // get all players with this item
                 if (string.IsNullOrEmpty(itm.Text)) continue;
                 
-                var playersWanted = items.Where(x => x.ItemId == Convert.ToInt32(itm.Text)).ToList();
+                var playersWanted = items.Where(x => x.ItemId == Convert.ToInt32(itm.Text)).ToList(); 
                 if (playersWanted.Count() == 0) continue; // move next
                 // found players want this item, rank them..
                 int colIndx = 4; // start with "D" column
