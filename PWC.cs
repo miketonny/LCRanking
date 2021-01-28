@@ -42,7 +42,10 @@ namespace LCRanking
             // get point deduction
             Worksheet deductionSheet = ((Worksheet)Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets[3]);
             List<Deduction> deductList = GetDeduction(deductionSheet);
-            items.ForEach(p => p.Priority = CalculatePriority(p.Point, attendanceList.Where(x => x.Name.Equals(p.Name)).FirstOrDefault().AttendPerc, deductList.Where(x => x.Name.Equals(p.Name)).ToList(), p.PassPoints)); // calc priorities for each person and item..  
+            // get point passes
+            Worksheet passesSheet = ((Worksheet)Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets[4]);
+            List<Passes> passesList = GetPasses(passesSheet);
+            items.ForEach(p => p.Priority = CalculatePriority(p.Point, attendanceList.Where(x => x.Name.Equals(p.Name)).FirstOrDefault()?.AttendPerc, deductList.Where(x => x.Name.Equals(p.Name)).ToList(), passesList.Where(x=> x.Name.Equals(p.Name) && x.ItemId == p.ItemId).FirstOrDefault()?.Point )); // calc priorities for each person and item..  
             var bossItems = rankingSheet.Range["C3", "C190"];
             foreach (Range itm in bossItems)
             {
@@ -55,6 +58,7 @@ namespace LCRanking
                 int colIndx = 4; // start with "D" column
                 playersWanted.OrderByDescending(x => x.Priority).ToList().ForEach(p =>
                 {
+                    if (!attendanceList.Any(x => x.Name.Equals(p.Name))) return;
                     rankingSheet.Cells[itm.Row, colIndx].Value = $"{p.Name} : {p.Priority}";
                     if (colIndx < 9) rankingSheet.Cells[itm.Row, colIndx].Style = GetCellStyle(colIndx);
                     colIndx++;
@@ -64,10 +68,25 @@ namespace LCRanking
  
         }
 
+        private List<Passes> GetPasses(Worksheet passesSheet)
+        {
+            List<Passes> passList = new List<Passes>();
+            var names = passesSheet.Range["A2", "A999"];
+            int row = 2; // record start from row 2
+            foreach (Range name in names)
+            {
+                // get all players with this item
+                if (string.IsNullOrEmpty(name.Text)) continue;
+                passList.Add(new Passes { Name = name.Text, Point = Convert.ToDouble(passesSheet.Range[$"C{row}"].Value2), ItemId = Convert.ToInt32(passesSheet.Range[$"B{row}"].Value2) });
+                row++;
+            }
+            return passList;
+        }
+
         private List<Deduction> GetDeduction(Worksheet deductionSheet)
         {
             List<Deduction> atts = new List<Deduction>();
-            var names = deductionSheet.Range["A2", "A55"];
+            var names = deductionSheet.Range["A2", "A99"];
             int row = 2; // record start from row 2
             foreach (Range name in names)
             {
@@ -83,7 +102,7 @@ namespace LCRanking
         private List<Attendance> GetAttendance(Worksheet attendanceSheet)
         {
             List<Attendance> atts = new List<Attendance>();
-            var names = attendanceSheet.Range["A4", "A99"];
+            var names = attendanceSheet.Range["A4", "A50"]; // active players only
             int row = 4; // record start from row 4
             foreach (Range name in names)
             {
@@ -122,7 +141,7 @@ namespace LCRanking
         }
 
         // item point + passed times * 0.4 + attendance * 0.1 - deducted = Priority for item.
-        private double CalculatePriority(int pt, int attnd, List<Deduction> deductList, int passes)
+        private double CalculatePriority(int pt, int? attnd, List<Deduction> deductList, double? passes)
         {
             double deduct = 0;
             if (deductList.Count() == 0) deduct = 0;
@@ -139,12 +158,15 @@ namespace LCRanking
                     case 48:
                         if (deductList.Count() > 2) deduct = deductList[2].DeductPoint;
                         break;
+                    case 47:
+                        if (deductList.Count() > 3) deduct = deductList[3].DeductPoint;
+                        break;
                     default:
                         break;
                 }
             }
-          
-            return (Convert.ToInt32(pt) + (passes * 0.4) + (Convert.ToInt32(attnd) * 0.1) + deduct);
+
+            return (Convert.ToInt32(pt) + (passes ?? 0) + (Convert.ToInt32(attnd ?? 0) * 0.1) + deduct);
         }
     }
 }

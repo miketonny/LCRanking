@@ -159,6 +159,7 @@
     <Compile Include="Attendance.cs" />
     <Compile Include="Deduction.cs" />
     <Compile Include="LCItem.cs" />
+    <Compile Include="Passes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
