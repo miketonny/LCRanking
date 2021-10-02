@@ -37,6 +37,7 @@
             this.tab1 = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.btnRun = this.Factory.CreateRibbonButton();
+            this.btnRefresh = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.SuspendLayout();
@@ -51,6 +52,7 @@
             // group1
             // 
             this.group1.Items.Add(this.btnRun);
+            this.group1.Items.Add(this.btnRefresh);
             this.group1.Label = "Loot Council";
             this.group1.Name = "group1";
             // 
@@ -59,6 +61,12 @@
             this.btnRun.Label = "Run Parses";
             this.btnRun.Name = "btnRun";
             this.btnRun.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnRun_Click);
+            // 
+            // btnRefresh
+            // 
+            this.btnRefresh.Label = "Load Source";
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnRefresh_Click);
             // 
             // PWC
             // 
@@ -79,6 +87,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tab1;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnRun;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnRefresh;
     }
 
     partial class ThisRibbonCollection
