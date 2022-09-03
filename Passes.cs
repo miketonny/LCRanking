@@ -10,6 +10,6 @@ namespace LCRanking
     {
         public string Name { get; set; }
         public double Point { get; set; }
-        public int ItemId { get; set; }
+        public string Reason { get; set; }
     }
 }

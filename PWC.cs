@@ -46,10 +46,10 @@ namespace LCRanking
 
             // parses items into sheet 
             Worksheet rankingSheet = ((Worksheet)Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets[1]);
-            if (rankingSheet.Cells[2, 1].Text != "Tempest KEEP") return;
+            if (rankingSheet.Cells[2, 1].Text != "Blade of Life's Inevitability") return;
             // get attendances
             Worksheet attendanceSheet = ((Worksheet)Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets[2]);
-            if (attendanceSheet.Cells[4, 1].Text != "Accountants") return;
+            if (attendanceSheet.Cells[4, 1].Text != "Aiyamama") return;
             List<Attendance> attendanceList = GetAttendance(attendanceSheet);
             // get point deduction
             Worksheet deductionSheet = ((Worksheet)Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets[3]);
@@ -63,23 +63,24 @@ namespace LCRanking
                 // get player's attendance
                 var attnd = attendanceList.Where(x => x.Name.Equals(p.Name)).FirstOrDefault()?.AttendPerc;
                 // get avg deducted point
-                var avgDeducted = deductList.Where(x => x.Name.Equals(p.Name)).Sum(x => x.DeductPoint) / p.Items.Count();
+                var avgDeducted = deductList.Where(x => x.Name.Equals(p.Name)).Sum(x => x.DeductPoint) / 10; //constant -0.1 for all items per deduction
                 // get passes addition
-                var passes = passesList.Where(x => x.Name.Equals(p.Name)).ToList();
+                var avgPasses = passesList.Where(x => x.Name.Equals(p.Name)).Sum(x => x.Point) / 10;
                 // apply priority change factors to each item for a player
                 p.Items.ForEach(i =>
                 {
                     if (attnd != null) i.Attnd = attnd.Value;
                     i.Deducted = avgDeducted;
                     // pass points are for individual items
-                    var passPt = passes.Where(b => b.ItemId == i.ItemId).ToList();
-                    if (passPt.Count() > 0) i.Passes = passPt.Sum(x => x.Point); // add total passed points
+                    var passPt = avgPasses; // avgPasses.Where(b => b.ItemId == i.ItemId).ToList();
+                    //if (passPt.Count() > 0) i.Passes = passPt.Sum(x => x.Point); // add total passed points
+                    i.Passes = passPt;
                 });
             });
 
 
             //items.ForEach(p => p.Priority = CalculatePriority(p.Point, attendanceList.Where(x => x.Name.Equals(p.Name)).FirstOrDefault()?.AttendPerc, deductList.Where(x => x.Name.Equals(p.Name)).ToList(), passesList.Where(x=> x.Name.Equals(p.Name) && x.ItemId == p.ItemId).FirstOrDefault()?.Point )); // calc priorities for each person and item..  
-            var bossItems = rankingSheet.Range["D3", "D160"];
+            var bossItems = rankingSheet.Range["D3", "D230"];
             foreach (Range itm in bossItems)
             {
                 // get all players with this item
@@ -115,7 +116,7 @@ namespace LCRanking
             {
                 // get all players with this item
                 if (string.IsNullOrEmpty(name.Text)) continue;
-                passList.Add(new Passes { Name = name.Text, Point = Convert.ToDouble(passesSheet.Range[$"C{row}"].Value2), ItemId = Convert.ToInt32(passesSheet.Range[$"B{row}"].Value2) });
+                passList.Add(new Passes { Name = name.Text, Point = Convert.ToDouble(passesSheet.Range[$"C{row}"].Value2), Reason =  passesSheet.Range[$"B{row}"].Value2 });
                 row++;
             }
             return passList;
